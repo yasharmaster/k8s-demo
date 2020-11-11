@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wp-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      appdb: wpdb
+  template:
+    metadata:
+      labels:
+        appdb: wpdb
+    spec:
+      containers:
+      - name: wp-db
+        image: mysql:5.7
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress
+              key: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress
+              key: MYSQL_DATABASE
+        - name: MYSQL_USER
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: wordpress
+              key: MYSQL_PASSWORD
+        ports:
+        - containerPort: 3306
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wp-db-svc
+  labels:
+    app: wpdb
+spec:
+  ports:
+  - port: 3306
+    protocol: TCP
+  selector:
+    appdb: wpdb
